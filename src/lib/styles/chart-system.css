@@ -1,0 +1,104 @@
+:root {
+	--chart-shell-bg: #202020;
+	--chart-surface-bg: #2b2b2b;
+	--chart-frame-border: #4a4a4a;
+	--chart-text: #ffffff;
+	--chart-muted-text: #d5d5d5;
+	--chart-grid-color: #666666;
+	--chart-threshold-good: #00cc33;
+	--chart-threshold-warn: #f9f200;
+	--chart-threshold-bad: #ff2b2b;
+	--chart-accent-good: #3cff3c;
+	--chart-shell-padding: 16px;
+	--chart-frame-padding: 8px 10px 0;
+	--chart-empty-padding: 24px;
+	--chart-border-width: 2px;
+	--chart-shell-radius: 14px;
+	--chart-frame-radius: 14px;
+	--chart-inner-radius: 10px;
+	--chart-value-row-gap: clamp(12px, 2vw, 28px);
+	--chart-value-row-padding: 12px 10px;
+	--chart-value-row-frame-padding: 0;
+	--chart-value-row-offset: 0;
+	--chart-value-row-border: var(--chart-frame-border);
+	--chart-value-row-bg: var(--chart-surface-bg);
+	--chart-value-font-size: clamp(18px, 7cqw, 42px);
+	--chart-value-font-weight: 700;
+	--chart-value-padding-inline: 0;
+	--chart-value-align: center;
+	--chart-percent-scale: 0.72em;
+	--chart-grid-label-size: 12px;
+	--chart-grid-label-weight: 600;
+}
+
+.chartSystem.chartShell {
+	position: relative;
+	width: 100%;
+	padding: var(--chart-shell-padding);
+	box-sizing: border-box;
+	container-type: inline-size;
+	background: var(--chart-shell-bg);
+	border: var(--chart-border-width) solid var(--chart-frame-border);
+	border-radius: var(--chart-shell-radius);
+}
+
+.chartSystem .plotFrame {
+	padding: var(--chart-frame-padding);
+	border: var(--chart-border-width) solid var(--chart-frame-border);
+	border-radius: var(--chart-frame-radius);
+}
+
+.chartSystem .valueRowFrame {
+	margin-top: var(--chart-value-row-offset);
+	padding: var(--chart-value-row-frame-padding);
+	box-sizing: border-box;
+	background: var(--chart-value-row-bg);
+	border: var(--chart-border-width) solid var(--chart-value-row-border);
+	border-radius: var(--chart-inner-radius);
+}
+
+.chartSystem .valueRow {
+	display: grid;
+	grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+	gap: var(--chart-value-row-gap);
+	padding: var(--chart-value-row-padding);
+	box-sizing: border-box;
+}
+
+.chartSystem .value {
+	display: flex;
+	align-items: var(--chart-value-align);
+	justify-content: center;
+	gap: 0.12em;
+	min-width: 0;
+	padding-inline: var(--chart-value-padding-inline);
+	font-size: var(--chart-value-font-size);
+	font-weight: var(--chart-value-font-weight);
+	line-height: 1;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.chartSystem .percent {
+	font-size: var(--chart-percent-scale);
+}
+
+.chartSystem .emptyState {
+	margin: 0;
+	padding: var(--chart-empty-padding);
+	text-align: center;
+	color: var(--chart-muted-text);
+	background: var(--chart-surface-bg);
+	border: var(--chart-border-width) solid var(--chart-frame-border);
+	border-radius: var(--chart-inner-radius);
+}
+
+.chartSystem .gridLabel {
+	font-size: var(--chart-grid-label-size);
+	font-weight: var(--chart-grid-label-weight);
+	fill: var(--chart-muted-text);
+}
+
+.chartSystem .labelBox {
+	fill: var(--chart-surface-bg);
+}

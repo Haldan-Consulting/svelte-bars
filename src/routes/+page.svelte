@@ -29,6 +29,8 @@
 		return floors;
 	}
 
+	const totalParts = 350;
+
 	// subscribe to store
 	$: ({ availability, performance, quality } = $factoryData);
 
@@ -65,6 +67,9 @@
 		{ label: 'Performance Loss', value: performanceLoss, c1: '#0d4fa3', c2: '#3d7ad6' },
 		{ label: 'Quality Loss', value: qualityLoss, c1: '#c40000', c2: '#ff2b2b' }
 	];
+
+	$: scrapCount = Math.round(totalParts * ((100 - quality) / 100));
+	$: goodCount = totalParts - scrapCount;
 </script>
 
 <style>
@@ -180,7 +185,14 @@
 			<section class="panel">
 				<h2>Machine Component</h2>
 				<p>Machine status card using the same SVG palette, shell, and OEE threshold rules.</p>
-				<Machine title="Turning Cell 1" assetId="V30-A03" oee={oee} data={barChartData} />
+				<Machine
+					title="Turning Cell 1"
+					assetId="V30-A03"
+					oee={oee}
+					goodCount={goodCount}
+					scrapCount={scrapCount}
+					data={barChartData}
+				/>
 			</section>
 		</div>
 	</div>

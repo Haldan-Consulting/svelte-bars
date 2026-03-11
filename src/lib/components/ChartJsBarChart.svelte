@@ -3,16 +3,21 @@
 	import { onMount } from 'svelte';
 	import type { Chart } from 'chart.js';
 	import type { BarData } from '$lib/types';
+	import { getThresholdColor } from '$lib/utils/chartTheme';
 
 	let { data = [] }: { data?: BarData[] } = $props();
+
+	// Glossary:
+	// - chartShell: outer component card
+	// - chartCanvas: fixed-height mount point for Chart.js
+	// - syncChart: create/update lifecycle for the Chart.js instance
+	// - valueRow: numeric summary row below the canvas
 
 	let canvas = $state<HTMLCanvasElement | undefined>(undefined);
 	let chart: Chart<'bar'> | null = null;
 	let ChartJS: (typeof import('chart.js/auto'))['default'] | null = null;
 	const oeeValue = $derived(data.find((item) => item.label === 'OEE')?.value ?? 0);
-	const valueRowBorder = $derived(
-		oeeValue > 75 ? '#00cc33' : oeeValue < 70 ? '#ff2b2b' : '#f9f200'
-	);
+	const valueRowBorder = $derived(getThresholdColor(oeeValue));
 
 	function syncChart() {
 		if (!browser || !canvas || !ChartJS) return;
@@ -128,70 +133,36 @@
 
 <style>
 	.chartShell {
-		position: relative;
-		width: 100%;
+		--chart-value-row-offset: 14px;
+		--chart-value-row-border: var(--value-row-border);
 		min-height: 420px;
-		padding: 16px;
-		box-sizing: border-box;
-		background: #202020;
-		border: 2px solid #4a4a4a;
-		border-radius: 14px;
 	}
 
+	/* chartCanvas: controls the visible plot height for the Chart.js canvas. */
 	.chartCanvas {
 		position: relative;
 		height: 388px;
 	}
 
-	.valueRow {
-		display: grid;
-		grid-template-columns: repeat(var(--count), minmax(0, 1fr));
-		gap: clamp(12px, 2vw, 28px);
-		margin-top: 14px;
-		padding: 12px 10px;
-		box-sizing: border-box;
-		background: #2b2b2b;
-		border: 2px solid var(--value-row-border);
-		border-radius: 10px;
-	}
-
 	.value {
-		display: flex;
 		align-items: baseline;
-		justify-content: center;
-		gap: 0.12em;
-		min-width: 0;
-		font-size: clamp(20px, 3.4vw, 42px);
-		font-weight: 700;
-		line-height: 1;
-		text-align: center;
-		white-space: nowrap;
-	}
-
-	.percent {
-		font-size: 0.72em;
-	}
-
-	.emptyState {
-		margin: 0;
-		padding: 24px;
-		text-align: center;
-		color: #d5d5d5;
 	}
 </style>
 
-<div class="chartShell">
+<div class="chartSystem chartShell" style={`--value-row-border:${valueRowBorder}`}>
 	{#if data.length}
 		<div class="chartCanvas">
 			<canvas bind:this={canvas} aria-label="Chart.js bar chart comparison"></canvas>
 		</div>
-		<div class="valueRow" style={`--count:${data.length};--value-row-border:${valueRowBorder}`}>
-			{#each data as item}
-				<div class="value" style={`color:${item.c2}`}>
-					<span>{item.value}</span>
-					<span class="percent">%</span>
-				</div>
-			{/each}
+		<div class="valueRowFrame">
+			<div class="valueRow" style={`--count:${data.length}`}>
+				{#each data as item}
+					<div class="value" style={`color:${item.c2}`}>
+						<span>{item.value}</span>
+						<span class="percent">%</span>
+					</div>
+				{/each}
+			</div>
 		</div>
 	{:else}
 		<p class="emptyState">No chart data available.</p>

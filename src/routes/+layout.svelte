@@ -1,5 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
+	import '$lib/styles/chart-system.css';
 
 	let { children } = $props();
 </script>

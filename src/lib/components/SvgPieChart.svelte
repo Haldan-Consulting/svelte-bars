@@ -1,7 +1,15 @@
 <script lang="ts">
 	import type { BarData } from '$lib/types';
+	import { getThresholdColor } from '$lib/utils/chartTheme';
 
 	let { data = [] }: { data?: BarData[] } = $props();
+
+	// Glossary:
+	// - chartShell: outer component card
+	// - plotFrame: bordered region around the radial chart
+	// - segments: computed pie/donut slices
+	// - centerDisc / centerValue: donut center callout
+	// - valueRow: numeric summary under the pie
 
 	const chartId = $props.id();
 	const size = 388;
@@ -13,9 +21,7 @@
 	const total = $derived(data.reduce((sum, item) => sum + item.value, 0));
 	const oeeValue = $derived(data.find((item) => item.label === 'OEE')?.value ?? 0);
 	const totalLossValue = $derived(100 - oeeValue);
-	const valueRowBorder = $derived(
-		oeeValue > 75 ? '#00cc33' : oeeValue < 70 ? '#ff2b2b' : '#f9f200'
-	);
+	const valueRowBorder = $derived(getThresholdColor(oeeValue));
 	const valueRowItems = $derived.by(() =>
 		data
 			.map((item) =>
@@ -78,31 +84,22 @@
 
 <style>
 	.chartShell {
-		position: relative;
-		width: 100%;
-		padding: 16px;
-		box-sizing: border-box;
-		container-type: inline-size;
-		background: #202020;
-		border: 2px solid #4a4a4a;
-		border-radius: 14px;
+		--plot-height: 388px;
+		--chart-value-row-offset: 14px;
+		--chart-value-row-border: var(--value-row-border);
+		--chart-value-row-padding: 12px 10px;
 	}
 
+	/* chart: groups the radial graphic and the summary row. */
 	.chart {
 		position: relative;
 		width: 100%;
 	}
 
-	.plotFrame {
-		padding: 8px 10px 0;
-		border: 2px solid #4a4a4a;
-		border-radius: 14px;
-	}
-
 	svg {
 		display: block;
 		width: 100%;
-		height: 388px;
+		height: var(--plot-height);
 		overflow: visible;
 	}
 
@@ -133,50 +130,15 @@
 	.segmentLabel {
 		font-size: 20px;
 		font-weight: 700;
-		fill: white;
-	}
-
-	.valueRow {
-		display: grid;
-		grid-template-columns: repeat(var(--count), minmax(0, 1fr));
-		gap: clamp(12px, 2vw, 28px);
-		margin-top: 14px;
-		padding: 12px 10px;
-		box-sizing: border-box;
-		background: #2b2b2b;
-		border: 2px solid var(--value-row-border);
-		border-radius: 10px;
+		fill: var(--chart-text);
 	}
 
 	.value {
-		display: flex;
 		align-items: center;
-		justify-content: center;
-		gap: 0.12em;
-		min-width: 0;
-		font-size: clamp(18px, 7cqw, 42px);
-		font-weight: 700;
-		line-height: 1;
-		text-align: center;
-		white-space: nowrap;
-	}
-
-	.percent {
-		font-size: 0.72em;
-	}
-
-	.emptyState {
-		margin: 0;
-		padding: 24px;
-		text-align: center;
-		color: #d5d5d5;
-		background: #2b2b2b;
-		border: 2px solid #4a4a4a;
-		border-radius: 10px;
 	}
 </style>
 
-<div class="chartShell">
+<div class="chartSystem chartShell" style={`--value-row-border:${valueRowBorder}`}>
 	<div class="chart">
 		{#if hasData}
 			<div class="plotFrame">
@@ -218,7 +180,9 @@
 				</svg>
 			</div>
 
-				<div class="valueRow" style={`--count:${valueRowItems.length};--value-row-border:${valueRowBorder}`}>
+			<!-- valueRowItems already carries the display ordering and colors. -->
+			<div class="valueRowFrame">
+				<div class="valueRow" style={`--count:${valueRowItems.length}`}>
 					{#each valueRowItems as item}
 						<div class="value" style={`color:${item.color}`}>
 							<span>{item.value}</span>
@@ -226,6 +190,7 @@
 						</div>
 					{/each}
 				</div>
+			</div>
 		{:else}
 			<p class="emptyState">No chart data available.</p>
 		{/if}
