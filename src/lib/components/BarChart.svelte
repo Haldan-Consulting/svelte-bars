@@ -1,28 +1,50 @@
 <script lang="ts">
-	type BarData = {
-		label: string;
-		value: number;
-		c1: string;
-		c2: string;
-	};
+	import type { BarData } from '$lib/types';
+	let { data = [] }: { data?: BarData[] } = $props();
 
-	export let data: BarData[] = [];
-
-	const height = 260;
-	const barWidth = 160;
-	const gap = 80;
+	const chartId = $props.id();
+	const width = 460;
+	const height = 388;
+	const topPad = 18;
+	const rightPad = 14;
+	const bottomPad = 44;
+	const leftPad = 46;
+	const barWidth = 56;
 	const max = 100;
 
-	$: width = data.length * barWidth + (data.length - 1) * gap;
+	const hasData = $derived(data.length > 0);
+	const plotHeight = height - topPad - bottomPad;
+	const plotWidth = width - leftPad - rightPad;
+	const slotWidth = $derived(hasData ? plotWidth / data.length : 0);
+	const gridValues = [0, 25, 50, 75, 100];
 </script>
 
 <style>
+	.chartShell {
+		position: relative;
+		width: 100%;
+		padding: 16px;
+		box-sizing: border-box;
+		background: #202020;
+		border: 2px solid #4a4a4a;
+		border-radius: 14px;
+	}
+
 	.chart {
 		position: relative;
+		width: 100%;
+	}
+
+	.plotFrame {
+		padding: 8px 10px 0;
+		border: 2px solid #4a4a4a;
+		border-radius: 14px;
 	}
 
 	svg {
 		display: block;
+		width: 100%;
+		height: 388px;
 		overflow: visible;
 	}
 
@@ -34,90 +56,131 @@
 	}
 
 	.valueRow {
-		position: relative;
+		display: grid;
+		grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+		gap: clamp(12px, 2vw, 28px);
 		background: #2b2b2b;
 		border: 2px solid #00cc33;
 		border-radius: 10px;
-		height: 120px;
+		padding: 20px 10px;
 		margin-top: 20px;
+		box-sizing: border-box;
 	}
 
 	.value {
-		position: absolute;
+		display: flex;
+		align-items: baseline;
+		justify-content: center;
+		gap: 0.12em;
 		text-align: center;
-		font-size: 64px;
+		font-size: clamp(24px, 4.2vw, 52px);
 		font-weight: bold;
-		line-height: 120px;
+		line-height: 1;
+		min-width: 0;
+		white-space: nowrap;
+	}
+
+	.percent {
+		font-size: 0.72em;
 	}
 
 	.labelBox {
 		fill: #2b2b2b;
 	}
+
+	.gridLabel {
+		font-size: 12px;
+		font-weight: 600;
+		fill: #d5d5d5;
+	}
+
+	.emptyState {
+		margin: 0;
+		padding: 24px;
+		text-align: center;
+		color: #d5d5d5;
+		background: #2b2b2b;
+		border: 2px solid #4a4a4a;
+		border-radius: 10px;
+	}
 </style>
 
-<div class="chart" style={`width:${width}px`}>
-	<svg {width} height={height}>
-		{#each [25, 50, 75, 100] as g}
-			<line
-				x1="0"
-				x2={width}
-				y1={height - (g / max) * height}
-				y2={height - (g / max) * height}
-				stroke="#666"
-			/>
-		{/each}
+<div class="chartShell">
+	<div class="chart">
+		{#if hasData}
+			<div class="plotFrame">
+				<svg viewBox={`0 0 ${width} ${height}`} aria-label="Custom SVG bar chart comparison">
+					{#each gridValues as g}
+						<line
+							x1={leftPad}
+							x2={width - rightPad}
+							y1={topPad + plotHeight - (g / max) * plotHeight}
+							y2={topPad + plotHeight - (g / max) * plotHeight}
+							stroke="#666"
+						/>
+						<text
+							class="gridLabel"
+							x={leftPad - 8}
+							y={topPad + plotHeight - (g / max) * plotHeight + 4}
+							text-anchor="end"
+						>
+							{g}%
+						</text>
+					{/each}
 
-		{#each data as m, i}
-			<defs>
-				<linearGradient id={"grad" + i} x1="0%" x2="100%">
-					<stop offset="0%" stop-color={m.c1} />
-					<stop offset="100%" stop-color={m.c2} />
-				</linearGradient>
-			</defs>
+					{#each data as m, i}
+						<defs>
+							<linearGradient id={`${chartId}-grad-${i}`} x1="0%" x2="100%">
+								<stop offset="0%" stop-color={m.c1} />
+								<stop offset="100%" stop-color={m.c2} />
+							</linearGradient>
+						</defs>
 
-			<!-- fixed-height bar that scales from the bottom -->
-			<g transform={`translate(${i * (barWidth + gap)}, 0)`}>
-				<rect
-					class="bar-shape"
-					x="0"
-					y="0"
-					width={barWidth}
-					height={height}
-					rx="12"
-					fill={"url(#grad" + i + ")"}
-					style={`transform: scaleY(${m.value / max});`}
-				/>
-			</g>
+						<g transform={`translate(${leftPad + i * slotWidth + (slotWidth - barWidth) / 2}, ${topPad})`}>
+							<rect
+								class="bar-shape"
+								x="0"
+								y="0"
+								width={barWidth}
+								height={plotHeight}
+								rx="12"
+								fill={`url(#${chartId}-grad-${i})`}
+								style={`transform: scaleY(${m.value / max});`}
+							/>
+						</g>
 
-			<rect
-				class="labelBox"
-				x={i * (barWidth + gap) + 40}
-				y={height - 20}
-				width="80"
-				height="24"
-				rx="4"
-			/>
+						<rect
+							class="labelBox"
+							x={leftPad + i * slotWidth + 8}
+							y={height - 28}
+							width={slotWidth - 16}
+							height="24"
+							rx="4"
+						/>
 
-			<text
-				x={i * (barWidth + gap) + 80}
-				y={height - 4}
-				text-anchor="middle"
-				fill="white"
-				font-size="14"
-			>
-				{m.label}
-			</text>
-		{/each}
-	</svg>
-
-	<div class="valueRow">
-		{#each data as m, i}
-			<div
-				class="value"
-				style={`left:${i * (barWidth + gap)}px;width:${barWidth}px;color:${m.c2}`}
-			>
-				{m.value} %
+						<text
+							x={leftPad + i * slotWidth + slotWidth / 2}
+							y={height - 12}
+							text-anchor="middle"
+							fill="white"
+							font-size="14"
+						>
+							{m.label}
+						</text>
+					{/each}
+				</svg>
 			</div>
-		{/each}
+
+			<div class="valueRow" style={`--count:${data.length}`}>
+				{#each data as m}
+					<div class="value" style={`color:${m.c2}`}>
+						<span>{m.value}</span>
+						<span class="percent">%</span>
+					</div>
+				{/each}
+			</div>
+		{:else}
+			<p class="emptyState">No chart data available.</p>
+		{/if}
 	</div>
 </div>
