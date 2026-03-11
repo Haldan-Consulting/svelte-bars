@@ -41,6 +41,7 @@
 		width: 100%;
 		padding: 16px;
 		box-sizing: border-box;
+		container-type: inline-size;
 		background: #202020;
 		border: 2px solid #4a4a4a;
 		border-radius: 14px;
@@ -99,7 +100,7 @@
 		justify-content: center;
 		gap: 0.12em;
 		text-align: center;
-		font-size: clamp(20px, 3.0vw, 42px);
+		font-size: clamp(18px, 7cqw, 42px);
 		font-weight: bold;
 		line-height: 1;
 		min-width: 0;

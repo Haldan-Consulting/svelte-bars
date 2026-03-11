@@ -1,5 +1,6 @@
 <script lang="ts">
 	import BarChart from '$lib/components/BarChart.svelte';
+	import Machine from '$lib/components/Machine.svelte';
 	import SvgPieChart from '$lib/components/SvgPieChart.svelte';
 	import { factoryData } from '$lib/stores/factory';
 	
@@ -174,6 +175,12 @@
 				<h2>Losses Pie Chart</h2>
 				<p>Pie chart showing OEE alongside availability, performance, and quality losses.</p>
 				<SvgPieChart data={pieChartData} />
+			</section>
+
+			<section class="panel">
+				<h2>Machine Component</h2>
+				<p>Machine status card using the same SVG palette, shell, and OEE threshold rules.</p>
+				<Machine title="Turning Cell 1" assetId="V30-A03" oee={oee} data={barChartData} />
 			</section>
 		</div>
 	</div>
