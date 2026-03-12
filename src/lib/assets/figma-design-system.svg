@@ -1,0 +1,111 @@
+<svg width="1600" height="1080" viewBox="0 0 1600 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pageBg" x1="0" y1="0" x2="1600" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4A4A4A"/>
+      <stop offset="1" stop-color="#2D2D2D"/>
+    </linearGradient>
+    <linearGradient id="yellowSwatch" x1="0" y1="0" x2="128" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE600"/>
+      <stop offset="1" stop-color="#F9F200"/>
+    </linearGradient>
+    <linearGradient id="blueSwatch" x1="0" y1="0" x2="128" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0D4FA3"/>
+      <stop offset="1" stop-color="#3D7AD6"/>
+    </linearGradient>
+    <linearGradient id="redSwatch" x1="0" y1="0" x2="128" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#C40000"/>
+      <stop offset="1" stop-color="#FF2B2B"/>
+    </linearGradient>
+    <linearGradient id="greenSwatch" x1="0" y1="0" x2="128" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00A800"/>
+      <stop offset="1" stop-color="#3CFF3C"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="1080" fill="url(#pageBg)"/>
+
+  <text x="72" y="88" fill="white" font-family="Arial, sans-serif" font-size="52" font-weight="700">HaldanMES Design System</text>
+  <text x="72" y="128" fill="#E3E3E3" font-family="Arial, sans-serif" font-size="24">Figma-ready tokens and component references derived from the live repo.</text>
+
+  <g id="ColorTokens">
+    <rect x="56" y="176" width="704" height="354" rx="24" fill="rgba(12,12,12,0.28)" stroke="rgba(255,255,255,0.14)"/>
+    <text x="88" y="234" fill="white" font-family="Arial, sans-serif" font-size="34" font-weight="700">Color Tokens</text>
+
+    <rect x="88" y="274" width="128" height="88" rx="16" fill="#202020"/>
+    <text x="236" y="310" fill="white" font-family="Arial, sans-serif" font-size="26" font-weight="700">Shell Background</text>
+    <text x="236" y="344" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="20">#202020</text>
+
+    <rect x="88" y="386" width="128" height="88" rx="16" fill="#2B2B2B"/>
+    <text x="236" y="422" fill="white" font-family="Arial, sans-serif" font-size="26" font-weight="700">Surface / Value Row</text>
+    <text x="236" y="456" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="20">#2B2B2B</text>
+
+    <rect x="430" y="274" width="128" height="88" rx="16" fill="#4A4A4A"/>
+    <text x="578" y="310" fill="white" font-family="Arial, sans-serif" font-size="26" font-weight="700">Frame Border</text>
+    <text x="578" y="344" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="20">#4A4A4A</text>
+
+    <rect x="430" y="386" width="128" height="88" rx="16" fill="#666666"/>
+    <text x="578" y="422" fill="white" font-family="Arial, sans-serif" font-size="26" font-weight="700">Grid Line</text>
+    <text x="578" y="456" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="20">#666666</text>
+  </g>
+
+  <g id="MetricPalette">
+    <rect x="800" y="176" width="744" height="354" rx="24" fill="rgba(12,12,12,0.28)" stroke="rgba(255,255,255,0.14)"/>
+    <text x="832" y="234" fill="white" font-family="Arial, sans-serif" font-size="34" font-weight="700">Metric Gradients</text>
+
+    <rect x="832" y="278" width="128" height="88" rx="16" fill="url(#yellowSwatch)"/>
+    <text x="980" y="312" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="700">Availability</text>
+    <text x="980" y="344" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="18">#FFE600 -> #F9F200</text>
+
+    <rect x="832" y="396" width="128" height="88" rx="16" fill="url(#blueSwatch)"/>
+    <text x="980" y="430" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="700">Performance</text>
+    <text x="980" y="462" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="18">#0D4FA3 -> #3D7AD6</text>
+
+    <rect x="1188" y="278" width="128" height="88" rx="16" fill="url(#redSwatch)"/>
+    <text x="1336" y="312" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="700">Quality</text>
+    <text x="1336" y="344" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="18">#C40000 -> #FF2B2B</text>
+
+    <rect x="1188" y="396" width="128" height="88" rx="16" fill="url(#greenSwatch)"/>
+    <text x="1336" y="312" transform="translate(0 118)" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="700">OEE</text>
+    <text x="1336" y="344" transform="translate(0 118)" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="18">#00A800 -> #3CFF3C</text>
+  </g>
+
+  <g id="Thresholds">
+    <rect x="56" y="570" width="704" height="430" rx="24" fill="rgba(12,12,12,0.28)" stroke="rgba(255,255,255,0.14)"/>
+    <text x="88" y="628" fill="white" font-family="Arial, sans-serif" font-size="34" font-weight="700">Threshold Rules</text>
+
+    <rect x="88" y="676" width="180" height="88" rx="16" fill="#111111" stroke="#00CC33" stroke-width="6"/>
+    <text x="178" y="730" text-anchor="middle" fill="#3CFF3C" font-family="Arial, sans-serif" font-size="30" font-weight="900">76%+</text>
+    <text x="88" y="794" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="20">Good: border uses #00CC33</text>
+
+    <rect x="306" y="676" width="180" height="88" rx="16" fill="#111111" stroke="#F9F200" stroke-width="6"/>
+    <text x="396" y="730" text-anchor="middle" fill="#3CFF3C" font-family="Arial, sans-serif" font-size="30" font-weight="900">70-75%</text>
+    <text x="306" y="794" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="20">Warning: border uses #F9F200</text>
+
+    <rect x="524" y="676" width="180" height="88" rx="16" fill="#111111" stroke="#FF2B2B" stroke-width="6"/>
+    <text x="614" y="730" text-anchor="middle" fill="#3CFF3C" font-family="Arial, sans-serif" font-size="30" font-weight="900">&lt;70%</text>
+    <text x="524" y="794" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="20">Bad: border uses #FF2B2B</text>
+  </g>
+
+  <g id="SpacingTokens">
+    <rect x="800" y="570" width="744" height="430" rx="24" fill="rgba(12,12,12,0.28)" stroke="rgba(255,255,255,0.14)"/>
+    <text x="832" y="628" fill="white" font-family="Arial, sans-serif" font-size="34" font-weight="700">Spacing & Geometry Tokens</text>
+
+    <text x="832" y="694" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="22">Shell padding</text>
+    <text x="1120" y="694" fill="white" font-family="Arial, sans-serif" font-size="22" font-weight="700">16px</text>
+
+    <text x="832" y="742" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="22">Frame padding</text>
+    <text x="1120" y="742" fill="white" font-family="Arial, sans-serif" font-size="22" font-weight="700">8px 10px 0</text>
+
+    <text x="832" y="790" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="22">Shell / frame radius</text>
+    <text x="1120" y="790" fill="white" font-family="Arial, sans-serif" font-size="22" font-weight="700">14px</text>
+
+    <text x="832" y="838" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="22">Inner radius</text>
+    <text x="1120" y="838" fill="white" font-family="Arial, sans-serif" font-size="22" font-weight="700">10px</text>
+
+    <text x="832" y="886" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="22">Border width</text>
+    <text x="1120" y="886" fill="white" font-family="Arial, sans-serif" font-size="22" font-weight="700">2px</text>
+
+    <text x="832" y="934" fill="#D7D7D7" font-family="Arial, sans-serif" font-size="22">Value font scale</text>
+    <text x="1120" y="934" fill="white" font-family="Arial, sans-serif" font-size="22" font-weight="700">clamp(18px, 7cqw, 42px)</text>
+  </g>
+</svg>
