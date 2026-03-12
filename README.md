@@ -1,42 +1,64 @@
-# sv
+# HaldanMES SVG Components
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Svelte components for data-driven manufacturing visuals, plus SVG exports for Figma review and packaging.
 
-## Creating a project
+## Development
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
+Install dependencies and run the app locally:
 
 ```sh
-# recreate this project
-npx sv@0.12.5 create --template minimal --types ts --install npm svelte-bars
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
-
-To create a production version of your app:
+Validate the repo:
 
 ```sh
+npm run check
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+## Component System
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+The live components are in `src/lib/components`:
+
+- `BarChart.svelte`
+- `SvgPieChart.svelte`
+- `Machine.svelte`
+- `ChartJsBarChart.svelte` for reference/comparison work
+
+Shared styling and behavior live here:
+
+- `src/lib/styles/chart-system.css`
+- `src/lib/utils/chartTheme.ts`
+- `src/lib/types.ts`
+
+Default demo wiring lives in `src/routes/+page.svelte`.
+
+## Figma Assets
+
+Editable SVG exports for Figma are stored in `src/lib/assets`:
+
+- `figma-components.svg`
+- `figma-bar-chart.svg`
+- `figma-pie-chart.svg`
+- `figma-machine.svg`
+- `figma-design-system.svg`
+- `bar-chart-anatomy.svg`
+
+Import these SVGs into Figma as vectors. Do not treat Figma as the primary source of truth for component geometry or behavior.
+
+## Workflow
+
+This repo uses a code-first hybrid workflow:
+
+1. Sketch intent in Figma only if the concept is still loose.
+2. Build the real component in Svelte first.
+3. Keep glossary comments inside the component file.
+4. Refresh SVG exports in `src/lib/assets` after code changes.
+5. Use Figma for review, annotation, and presentation.
+6. Apply revisions in code first, then regenerate the SVG exports.
+
+The detailed workflow is documented in [docs/component-workflow.md](/Users/Erikhansen/Library/CloudStorage/OneDrive-HaldanConsulting/4.3%20Haldan%20Development/svg/svelte-bars/docs/component-workflow.md).
+
+That workflow document also includes a Mermaid diagram of the full Figma/Codex loop, and the matching Figma-importable SVG export is [src/lib/assets/figma-codex-workflow.svg](/Users/Erikhansen/Library/CloudStorage/OneDrive-HaldanConsulting/4.3%20Haldan%20Development/svg/svelte-bars/src/lib/assets/figma-codex-workflow.svg).
