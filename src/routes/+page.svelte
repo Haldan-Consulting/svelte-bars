@@ -1,5 +1,5 @@
 <script lang="ts">
-	import BarChart from '$lib/components/BarChart.svelte';
+	import Machine from '$lib/components/Machine.svelte';
 	import { factoryData } from '$lib/stores/factory';
 	
 	
@@ -17,8 +17,11 @@
 	// calculate OEE
 	$: oee = Math.round((availability / 100) * (performance / 100) * (quality / 100) * 100);
 
+	$: goodCount = Math.round((availability + performance + quality + oee) * 1.2);
+	$: scrapCount = Math.max(0, Math.round((100 - quality) * 0.8));
+
 	// build bar chart data
-	$: barChartData = [
+	$: machineData = [
 		{ label: 'Availability', value: availability, c1: '#ffe600', c2: '#f9f200' },
 		{ label: 'Performance', value: performance, c1: '#0d4fa3', c2: '#3d7ad6' },
 		{ label: 'Quality', value: quality, c1: '#c40000', c2: '#ff2b2b' },
@@ -52,7 +55,7 @@
 	}
 
 	.chartStage {
-		width: 500px;
+		width: 600px;
 		max-width: 100%;
 	}
 </style>
@@ -60,6 +63,6 @@
 <div class="page">
 	<button on:click={simulateMachine}>Update Values</button>
 	<div class="chartStage">
-		<BarChart data={barChartData} />
+		<Machine title="Turning Cell 1" partNo="V30-A03" goodCount={goodCount} scrapCount={scrapCount} data={machineData} />
 	</div>
 </div>
