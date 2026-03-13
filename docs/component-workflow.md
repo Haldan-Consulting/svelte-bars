@@ -2,200 +2,177 @@
 
 ## Summary
 
-This repo uses a `code-first hybrid` workflow for chart and machine-style components.
+This repo now uses a `Figma handoff + fixed-geometry code` workflow for bespoke visual components.
 
-The Svelte components and shared tokens are the source of truth. Figma is the review and packaging layer.
+The source of truth is:
 
-Use this workflow for any new data-driven component or major revision.
+- Figma for `StaticShell` and `DynamicShell` geometry
+- Svelte for runtime behavior and data binding
+
+This is the default path for components that need to match Figma closely and still animate or update from live data.
+
+## Core Rule
+
+Split each component into two Figma handoff frames:
+
+- `StaticShell`
+- `DynamicShell`
+
+Then rebuild the component in code from those two handoffs.
+
+Do not try to reconstruct a component by partially tracing a flattened SVG export.
 
 ## Workflow Diagram
 
 ```mermaid
 flowchart LR
-    A["New component or revision request"] --> B{"Is the concept still loose?"}
-    B -->|Yes| C["Create a rough Figma sketch<br/>Focus on intent, data, and sub-elements"]
-    B -->|No| D["Implement in Svelte first"]
-    C --> D
-    D --> E["Use shared tokens and helpers<br/>Keep geometry in the component"]
-    E --> F["Add or update glossary comments<br/>Name sub-elements consistently"]
-    F --> G["Validate live behavior<br/>Data, OEE math, thresholds, responsiveness"]
-    G --> H["Export or refresh SVG assets<br/>Standalone, board, design-system, anatomy"]
-    H --> I["Import SVGs into Figma"]
-    I --> J["Review in Figma<br/>Annotate, compare, present, collect feedback"]
-    J --> K{"Feedback changes the component?"}
-    K -->|Yes| L["Update code first"]
-    L --> E
-    K -->|No| M["Component ready"]
-    M --> N["Acceptance checks<br/>README/docs aligned, npm run check, npm run build"]
+    A["Design component in Figma"] --> B["Create StaticShell frame"]
+    B --> C["Create DynamicShell frame"]
+    C --> D["Export handoff HTML/CSS or SVG geometry"]
+    D --> E["Extract fixed coordinates into layout spec"]
+    E --> F["Build Svelte component from fixed layout"]
+    F --> G["Bind only live parts in code"]
+    G --> H["Validate with npm run check and npm run build"]
+    H --> I["Review visually against Figma"]
+    I --> J{"Still off?"}
+    J -->|Yes| K["Adjust exact coordinates in layout spec"]
+    K --> F
+    J -->|No| L["Refresh SVG assets if needed"]
 ```
 
-An SVG export of this workflow for Figma import lives at [src/lib/assets/figma-codex-workflow.svg](/Users/Erikhansen/Library/CloudStorage/OneDrive-HaldanConsulting/4.3%20Haldan%20Development/svg/svelte-bars/src/lib/assets/figma-codex-workflow.svg).
+## What Goes In Figma
 
-## Source Of Truth
+### StaticShell
+
+`StaticShell` contains everything that never changes:
+
+- outer shell
+- plot frame
+- plot surface
+- title
+- grid labels
+- grid lines
+- label chips
+- default value-row shell
+
+### DynamicShell
+
+`DynamicShell` contains only the parts code will update:
+
+- bars
+- live values
+- dynamic border
+
+The dynamic handoff must expose:
+
+- exact frame size
+- exact x/y coordinates
+- exact widths/heights
+- text anchors
+- bar slot positions
+
+## Minimum Acceptable Figma Handoff
+
+For a component to be implementable from Figma, provide:
+
+1. One fixed-size `StaticShell` frame
+2. One fixed-size `DynamicShell` frame
+3. Named layers for all dynamic parts
+4. Individual grid lines if the grid matters visually
+5. Separate `number` and `percent` text for dynamic values
+6. No outlined text for dynamic content
+
+If any of those are missing, implementation becomes guesswork again.
+
+## What Goes In Code
 
 Code owns:
 
-- component behavior
-- OEE math and data mapping
-- threshold logic
-- responsive behavior
-- SVG geometry and layout relationships
-- shared tokens and reusable styling rules
+- data binding
+- OEE math and threshold logic
+- bar heights
+- dynamic values
+- dynamic border color
+- animations
+- layout spec files derived from Figma coordinates
 
-Figma owns:
+## Layout Rule
 
-- review boards
-- annotations
-- stakeholder communication
-- library packaging for humans
+For fidelity-sensitive components:
 
-Do not maintain a hand-edited Figma version that diverges from code.
+- use fixed internal geometry
+- prefer fixed-size variants like `small`, `medium`, `large`
+- do not rely on internal responsive scaling
+- do not rely on shared structural CSS
 
-## Workflow Steps
+Shared logic is still fine when it is truly shared, for example:
 
-### 1. Concept Pass
+- threshold helpers
+- shared types
 
-If the component idea is still loose, sketch it in Figma at a rough block level only.
+## Shared Vs Local
 
-Define:
+Shared files should own only logic or tokens that are genuinely common:
 
-- the component goal
-- the data it needs to show
-- the key sub-elements
-- the comparison or review context
-
-Do not lock pixel-perfect geometry in Figma at this stage.
-
-### 2. Build In Code First
-
-Create or update the Svelte component in `src/lib/components`.
-
-Rules:
-
-- keep geometry and SVG layout math in the component file
-- use shared tokens and shared styling where the styling should propagate across components
-- use realistic or default live data during implementation
-- make threshold and status logic real before exporting any design assets
-
-Shared system files:
-
-- `src/lib/styles/chart-system.css`
 - `src/lib/utils/chartTheme.ts`
 - `src/lib/types.ts`
 
-### 3. Document Anatomy In Code
+Component files and per-component layout specs should own:
 
-Every component should include glossary comments naming its sub-elements.
+- shell geometry
+- plot geometry
+- bar geometry
+- label positions
+- value positions
+- component-specific typography sizing if needed for fidelity
 
-Examples:
+## File Ownership
 
-- `chartShell`
-- `plotFrame`
-- `valueRowFrame`
-- `valueRow`
-- `badges`
-- `assetLabel`
-
-If a structural change affects the glossary, update the comments in the component and refresh any anatomy asset that references those names.
-
-### 4. Export SVG Assets For Figma
-
-After the code is visually correct, create or refresh the SVG assets in `src/lib/assets`.
-
-Standard exports:
-
-- one standalone SVG for the component
-- one placement on a combined board if it belongs in the main library view
-- one design-system board update if shared tokens changed
-- one anatomy graphic if structure changed enough that labels or callouts are stale
-
-These SVGs should be editable in Figma after import.
-
-### 5. Review In Figma
-
-Use Figma for:
-
-- side-by-side comparison
-- annotations and comments
-- stakeholder review
-- presentation boards
-- component library organization
-
-Treat Figma feedback as requested changes to the code source of truth.
-
-### 6. Revise In Code, Then Refresh Assets
-
-When feedback changes spacing, colors, radii, labels, or structure:
-
-1. update the component or shared tokens in code
-2. verify the live component
-3. refresh the SVG exports
-4. replace the prior Figma import
-
-Do not manually patch the imported Figma vectors as the long-term version.
-
-## What Lives Where
-
-Shared system files own:
-
-- color tokens
-- radii
-- border widths
-- common shell and frame styling
-- shared value-row typography
-- threshold token definitions
-
-Individual component files own:
-
-- dimensions
-- plot padding tied to geometry
-- bar widths
-- pie radii
-- badge positions
-- component-only visual behavior
-
-Route/demo files own:
-
-- sample data
-- comparison layouts
-- component showcase composition
+- components: `src/lib/components`
+- component layout specs: `src/lib/components/*.layouts.ts`
+- shared logic: `src/lib/utils`
+- assets: `src/lib/assets`
+- showcase page: `src/routes/+page.svelte`
 
 ## Standard Deliverables
 
-Every new component should ship with these deliverables:
+For each new component built this way:
 
 1. the real Svelte component
-2. glossary comments inside the component
-3. one standalone Figma-importable SVG export
-4. one placement on the combined component board if relevant
-5. one design-system update if shared tokens changed
+2. one fixed layout spec file
+3. a `StaticShell` handoff
+4. a `DynamicShell` handoff
+5. glossary comments if the component structure is non-trivial
 
-Optional but recommended:
+Optional:
 
-- anatomy SVG when the component has complex internal structure
+- a Figma-importable SVG export of the finished live component
+- an anatomy/spec asset
 
 ## Acceptance Checklist
 
 A component is ready when:
 
-- the Svelte component works with live or default realistic data
-- shared tokens are used where appropriate
-- glossary comments match the rendered structure
-- the SVG export visually matches the live component
-- the Figma board is updated with the latest export
+- the Figma handoff is split into `StaticShell` and `DynamicShell`
+- the Svelte component uses fixed coordinates from that handoff
+- only live parts are dynamic in code
+- the live component visually matches Figma
 - `npm run check` passes
 - `npm run build` passes
 
-## Repo Paths
+## Applies To Other Components
 
-Use these folders consistently:
+Yes, this workflow applies to any future bespoke component that is:
 
-- components: `src/lib/components`
-- shared styles: `src/lib/styles`
-- shared helpers: `src/lib/utils`
-- Figma/anatomy exports: `src/lib/assets`
-- showcase page: `src/routes/+page.svelte`
+- visually custom
+- geometry-sensitive
+- partly static and partly data-driven
 
-## Default Rule
+Examples:
 
-If you are unsure whether to start in Figma or code for a new component in this repo, start in code.
+- machine cards
+- pie/donut widgets
+- KPI tiles with animated fills
+- status panels with fixed shells and live overlays
+
+It is not the default for generic library charts where a charting library is more appropriate.

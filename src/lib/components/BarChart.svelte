@@ -1,169 +1,333 @@
 <script lang="ts">
+	import { barChartLayout } from '$lib/components/barChart.layouts';
 	import type { BarData } from '$lib/types';
 	import { getThresholdColor } from '$lib/utils/chartTheme';
+
+	type BarKey = 'availability' | 'performance' | 'quality' | 'oee';
+
 	let { data = [] }: { data?: BarData[] } = $props();
 
-	// Glossary:
-	// - chartShell: outer card wrapper for the whole component
-	// - plotFrame: bordered region containing the SVG plot and value row
-	// - svg/viewBox: internal coordinate system for bar placement
-	// - slotWidth: horizontal lane assigned to each metric
-	// - valueRowFrame: bordered numeric summary box
-	// - valueRow: equal-width columns aligned to the bar lanes
+	const layout = barChartLayout;
 
-	// Generate a stable per-instance id so repeated renders of this component
-	// can define gradients without colliding in the DOM.
-	const chartId = $props.id();
+	const normalizeKey = (label: string): BarKey => {
+		switch (label.toLowerCase()) {
+			case 'availability':
+				return 'availability';
+			case 'performance':
+				return 'performance';
+			case 'quality':
+				return 'quality';
+			default:
+				return 'oee';
+		}
+	};
 
-	// These dimensions define the internal SVG coordinate space. The SVG scales
-	// responsively in CSS, but all positioning math is done against this box.
-	const width = 460;
-	const height = 332;
-	const topPad = 10;
-	const rightPad = 14;
-	const bottomPad = 28;
-	const leftPad = 46;
-	const barWidth = 56;
-	const max = 100;
+	const barItems = $derived(
+		data.map((item) => ({
+			...item,
+			key: normalizeKey(item.label)
+		}))
+	);
 
-	// Derived layout helpers for the plotting region inside the framed chart.
-	const hasData = $derived(data.length > 0);
-	const plotHeight = height - topPad - bottomPad;
-	const plotWidth = width - leftPad - rightPad;
-	const slotWidth = $derived(hasData ? plotWidth / data.length : 0);
-	const oeeValue = $derived(data.find((item) => item.label === 'OEE')?.value ?? 0);
+	const barItemsByKey = $derived(
+		Object.fromEntries(barItems.map((item) => [item.key, item])) as Partial<Record<BarKey, (typeof barItems)[number]>>
+	);
+
+	const oeeValue = $derived(barItems.find((item) => item.key === 'oee')?.value ?? 0);
 	const thresholdColor = $derived(getThresholdColor(oeeValue));
+	const hasData = $derived(barItems.length > 0);
 
-	// Horizontal guide lines and matching y-axis labels.
-	const gridValues = [0, 25, 50, 75, 100];
+	const barsToRender = $derived(
+		layout.dynamicShell.bars.items
+			.map((slot) => {
+				const metric = barItemsByKey[slot.key as BarKey];
+				return metric ? { slot, metric } : null;
+			})
+			.filter((item): item is { slot: (typeof layout.dynamicShell.bars.items)[number]; metric: BarData & { key: BarKey } } => Boolean(item))
+	);
+
+	const valuesToRender = $derived(
+		layout.dynamicShell.values.items
+			.map((slot) => {
+				const metric = barItemsByKey[slot.key as BarKey];
+				return metric ? { slot, metric } : null;
+			})
+			.filter((item): item is { slot: (typeof layout.dynamicShell.values.items)[number]; metric: BarData & { key: BarKey } } => Boolean(item))
+	);
+
+	const barHeight = (value: number) =>
+		Math.max(0, Math.min(layout.dynamicShell.bars.slotHeight, (value / 100) * layout.dynamicShell.bars.slotHeight));
+
+	const barTop = (value: number) => layout.dynamicShell.bars.slotHeight - barHeight(value);
+
+	const barStyle = (item: BarData, x: number) =>
+		`left:${x}px;top:${barTop(item.value)}px;width:${layout.dynamicShell.bars.items[0].width}px;height:${barHeight(item.value)}px;background:linear-gradient(90deg, ${item.c1} 0%, ${item.c2} 100%);`;
+
+	const valueStyle = (item: BarData, x: number, y: number) =>
+		`left:${x}px;top:${y}px;width:${layout.dynamicShell.values.items[0].width}px;height:${layout.dynamicShell.values.items[0].height}px;color:${item.c2};`;
 </script>
 
 <style>
-	.chartShell {
-		--plot-height: 332px;
-		--chart-value-row-offset: -12px;
-		--chart-value-row-frame-padding: 0 0 6px;
-		--chart-value-row-gap: 0;
-		--chart-value-row-padding: 0;
-		--chart-value-padding-inline: 4px;
-	}
-
-	/* chart: groups the plot and summary row vertically. */
-	.chart {
+	.chartRoot {
 		position: relative;
-		width: 100%;
+		width: 500px;
+		height: 500px;
+		margin: 0 auto;
 	}
 
-	/* The viewBox provides responsive scaling; the fixed CSS height keeps the
-	   visible plot area aligned with the Chart.js version. */
-	svg {
-		display: block;
-		width: 100%;
-		height: var(--plot-height);
-		overflow: visible;
+	.chartShell {
+		position: absolute;
+		inset: 0;
+		box-sizing: border-box;
+		background: #202020;
+		border: 2px solid #4a4a4a;
+		border-radius: 14px;
 	}
 
-	/* Bars are drawn at full height and scaled from the bottom so updates only
-	   need to change one transform value per datum. */
-	.bar-shape {
-		filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
-		transform-box: fill-box;
-		transform-origin: center bottom;
-		transition: transform 0.5s ease;
+	.plotFrame {
+		position: absolute;
+		left: 40px;
+		top: 100px;
+		width: 420px;
+		height: 300px;
+		box-sizing: border-box;
+		background: #2b2b2b;
+		border: 2px solid #4a4a4a;
+		border-radius: 14px;
 	}
 
-	/* valueRow: one column per metric, sized from the same plot width as the bars. */
+	.title {
+		position: absolute;
+		left: 40px;
+		top: 20px;
+		margin: 0;
+		color: #ffffff;
+		font-size: 36px;
+		font-family: Helvetica, Arial, sans-serif;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.grid {
+		position: absolute;
+		left: 45px;
+		top: 105px;
+		width: 410px;
+		height: 290px;
+	}
+
+	.gridLabels {
+		position: absolute;
+		inset: 0;
+	}
+
+	.gridLabel {
+		position: absolute;
+		color: #d5d5d5;
+		font-size: 12px;
+		font-family: Arial, Helvetica, sans-serif;
+		font-weight: 700;
+		line-height: 1;
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	.gridLines {
+		position: absolute;
+		left: 42.64px;
+		top: 8.53px;
+		width: 367.36px;
+		height: 275.07px;
+	}
+
+	.gridLine {
+		position: absolute;
+		left: 0;
+		width: 367.36px;
+		height: 1px;
+		background: #666666;
+	}
+
+	.labels {
+		position: absolute;
+		left: 98px;
+		top: 400px;
+		width: 351px;
+		height: 24px;
+	}
+
+	.labelItem {
+		position: absolute;
+		height: 24px;
+	}
+
+	.labelBox {
+		position: absolute;
+		inset: 0;
+		background: #2b2b2b;
+		border-radius: 4px;
+	}
+
+	.labelText {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		padding-top: 3px;
+		color: #ffffff;
+		font-size: 14px;
+		font-family: Arial, Helvetica, sans-serif;
+		font-weight: 400;
+		line-height: 1;
+		box-sizing: border-box;
+	}
+
+	.valueRowFrameDefault {
+		position: absolute;
+		left: 98px;
+		top: 424px;
+		width: 351px;
+		height: 48px;
+		box-sizing: border-box;
+		background: #2b2b2b;
+		border: 4px solid #4a4a4a;
+		border-radius: 10px;
+	}
+
+	.dynamicShell {
+		position: absolute;
+		left: 98px;
+		top: 150px;
+		width: 351px;
+		height: 322px;
+	}
+
+	.dynamicBorder {
+		position: absolute;
+		left: 0;
+		top: 274px;
+		width: 351px;
+		height: 48px;
+		box-sizing: border-box;
+		background: #2b2b2b;
+		border: 4px solid var(--threshold-color);
+		border-radius: 10px;
+	}
+
+	.bars {
+		position: absolute;
+		left: 8px;
+		top: 0;
+		width: 329px;
+		height: 239px;
+	}
+
+	.bar {
+		position: absolute;
+		border-radius: 5px;
+		transition:
+			height 200ms ease,
+			top 200ms ease;
+	}
+
+	.values {
+		position: absolute;
+		left: 10px;
+		top: 278px;
+		width: 333px;
+		height: 40px;
+	}
+
 	.value {
-		align-items: baseline;
+		position: absolute;
+	}
+
+	.number {
+		position: absolute;
+		left: 0;
+		top: 0;
+		color: inherit;
+		font-size: 34px;
+		font-family: Helvetica, Arial, sans-serif;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.percent {
+		position: absolute;
+		left: 38px;
+		top: 9px;
+		color: inherit;
+		font-size: 24px;
+		font-family: Helvetica, Arial, sans-serif;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.emptyState {
+		margin: 0;
+		padding: 24px;
+		text-align: center;
+		color: #d5d5d5;
+		background: #202020;
+		border: 2px solid #4a4a4a;
+		border-radius: 14px;
+		font-family: Arial, Helvetica, sans-serif;
 	}
 </style>
 
-<div class="chartSystem chartShell" style={`--chart-value-row-border:${thresholdColor}`}>
-	<div class="chart">
-		{#if hasData}
-			<div class="plotFrame">
-				<svg viewBox={`0 0 ${width} ${height}`} aria-label="Custom SVG bar chart comparison">
-					<!-- Render the horizontal grid first so bars sit above it. -->
-					{#each gridValues as g}
-						<line
-							x1={leftPad}
-							x2={width - rightPad}
-							y1={topPad + plotHeight - (g / max) * plotHeight}
-							y2={topPad + plotHeight - (g / max) * plotHeight}
-							stroke="var(--chart-grid-color)"
-						/>
-						<text
-							class="gridLabel"
-							x={leftPad - 8}
-							y={topPad + plotHeight - (g / max) * plotHeight + 4}
-							text-anchor="end"
-						>
-							{g}%
-						</text>
-					{/each}
+{#if hasData}
+	<div class="chartRoot" style={`--threshold-color:${thresholdColor};`}>
+		<div class="chartShell"></div>
+		<div class="plotFrame"></div>
+		<div class="valueRowFrameDefault"></div>
+		<h2 class="title">Bar Chart</h2>
 
-					<!-- Each bar owns its gradient, geometry, and bottom label. -->
-					{#each data as m, i}
-						<defs>
-							<linearGradient id={`${chartId}-grad-${i}`} x1="0%" x2="100%">
-								<stop offset="0%" stop-color={m.c1} />
-								<stop offset="100%" stop-color={m.c2} />
-							</linearGradient>
-						</defs>
-
-						<g transform={`translate(${leftPad + i * slotWidth + (slotWidth - barWidth) / 2}, ${topPad})`}>
-							<!-- Rounded corners on each bar. -->
-							<rect
-								class="bar-shape"
-								x="0"
-								y="0"
-								width={barWidth}
-								height={plotHeight}
-								rx="5"
-								fill={`url(#${chartId}-grad-${i})`}
-								style={`transform: scaleY(${m.value / max});`}
-							></rect>
-						</g>
-
-						<rect
-							class="labelBox"
-							x={leftPad + i * slotWidth + 8}
-							y={height - 22}
-							width={slotWidth - 16}
-							height="24"
-							rx="4"
-						/>
-
-						<text
-							x={leftPad + i * slotWidth + slotWidth / 2}
-							y={height - 6}
-							text-anchor="middle"
-							fill="var(--chart-text)"
-							font-size="14"
-						>
-							{m.label}
-						</text>
-					{/each}
-				</svg>
-
-				<!-- The summary row is anchored to the plot width so each value tracks
-				     its bar lane rather than the full card width. -->
-				<div
-					class="valueRowFrame"
-					style={`margin-left:${(leftPad / width) * 100}%;width:${(plotWidth / width) * 100}%`}
-				>
-					<div class="valueRow" style={`--count:${data.length}`}>
-						{#each data as m}
-							<div class="value" style={`color:${m.c2}`}>
-								<span>{m.value}</span>
-								<span class="percent">%</span>
-							</div>
-						{/each}
+		<div class="grid">
+			<div class="gridLabels">
+				{#each layout.staticShell.grid.labelPositions as item}
+					<div class="gridLabel" style={`left:${item.x}px;top:${item.y}px;`}>
+						{item.value}%
 					</div>
-				</div>
+				{/each}
 			</div>
-		{:else}
-			<p class="emptyState">No chart data available.</p>
-		{/if}
+
+			<div class="gridLines">
+				{#each layout.staticShell.grid.lineYs as y}
+					<div class="gridLine" style={`top:${y}px;`}></div>
+				{/each}
+			</div>
+		</div>
+
+		<div class="labels">
+			{#each layout.staticShell.labels.items as item}
+				<div class="labelItem" style={`left:${item.x}px;top:${item.y}px;width:${item.width}px;height:${item.height}px;`}>
+					<div class="labelBox"></div>
+					<div class="labelText">{item.label}</div>
+				</div>
+			{/each}
+		</div>
+
+		<div class="dynamicShell">
+			<div class="bars">
+				{#each barsToRender as { slot, metric }}
+					<div class="bar" style={barStyle(metric, slot.x)}></div>
+				{/each}
+			</div>
+
+			<div class="dynamicBorder"></div>
+
+			<div class="values">
+				{#each valuesToRender as { slot, metric }}
+					<div class="value" style={valueStyle(metric, slot.x, slot.y)}>
+						<span class="number">{metric.value}</span>
+						<span class="percent">%</span>
+					</div>
+				{/each}
+			</div>
+		</div>
 	</div>
-</div>
+{:else}
+	<p class="emptyState">No chart data available.</p>
+{/if}

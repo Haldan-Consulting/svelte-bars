@@ -1,10 +1,8 @@
 # HaldanMES SVG Components
 
-Svelte components for data-driven manufacturing visuals, plus SVG exports for Figma review and packaging.
+Svelte components for bespoke manufacturing visuals that are designed in Figma and rebuilt in code from fixed geometry.
 
 ## Development
-
-Install dependencies and run the app locally:
 
 ```sh
 npm install
@@ -18,47 +16,67 @@ npm run check
 npm run build
 ```
 
+## Current Direction
+
+This repo no longer treats shared structural CSS as the default for highly custom components.
+
+The preferred method is:
+
+1. design the component in Figma
+2. split the handoff into `StaticShell` and `DynamicShell`
+3. extract fixed coordinates into a layout spec
+4. rebuild the live component in Svelte
+5. keep only the changing parts dynamic
+
+This worked for the rebuilt bar chart and is now the default for similar components.
+
 ## Component System
 
-The live components are in `src/lib/components`:
+Live components are in `src/lib/components`:
 
 - `BarChart.svelte`
 - `SvgPieChart.svelte`
 - `Machine.svelte`
-- `ChartJsBarChart.svelte` for reference/comparison work
+- `ChartJsBarChart.svelte` as reference/comparison work
 
-Shared styling and behavior live here:
+Supporting files:
 
-- `src/lib/styles/chart-system.css`
-- `src/lib/utils/chartTheme.ts`
-- `src/lib/types.ts`
+- per-component layout specs in `src/lib/components/*.layouts.ts`
+- shared logic in `src/lib/utils`
+- shared types in `src/lib/types.ts`
 
-Default demo wiring lives in `src/routes/+page.svelte`.
+## Figma Handoff Standard
 
-## Figma Assets
+For fidelity-sensitive components, provide:
 
-Editable SVG exports for Figma are stored in `src/lib/assets`:
+- one `StaticShell` frame
+- one `DynamicShell` frame
 
-- `figma-components.svg`
-- `figma-bar-chart.svg`
-- `figma-pie-chart.svg`
-- `figma-machine.svg`
-- `figma-design-system.svg`
-- `bar-chart-anatomy.svg`
+`StaticShell` should contain the parts that never change.
 
-Import these SVGs into Figma as vectors. Do not treat Figma as the primary source of truth for component geometry or behavior.
+`DynamicShell` should contain only:
+
+- bars/fills
+- live values
+- dynamic borders
+- any other data-driven overlays
+
+This gives Codex enough structure to rebuild the component faithfully without guessing.
 
 ## Workflow
 
-This repo uses a code-first hybrid workflow:
+The full workflow is documented in [docs/component-workflow.md](/Users/Erikhansen/Library/CloudStorage/OneDrive-HaldanConsulting/4.3%20Haldan%20Development/svg/svelte-bars/docs/component-workflow.md).
 
-1. Sketch intent in Figma only if the concept is still loose.
-2. Build the real component in Svelte first.
-3. Keep glossary comments inside the component file.
-4. Refresh SVG exports in `src/lib/assets` after code changes.
-5. Use Figma for review, annotation, and presentation.
-6. Apply revisions in code first, then regenerate the SVG exports.
+In short:
 
-The detailed workflow is documented in [docs/component-workflow.md](/Users/Erikhansen/Library/CloudStorage/OneDrive-HaldanConsulting/4.3%20Haldan%20Development/svg/svelte-bars/docs/component-workflow.md).
+1. design in Figma
+2. create `StaticShell` and `DynamicShell`
+3. rebuild in Svelte from fixed coordinates
+4. validate
+5. tune coordinates rather than re-guessing structure
 
-That workflow document also includes a Mermaid diagram of the full Figma/Codex loop, and the matching Figma-importable SVG export is [src/lib/assets/figma-codex-workflow.svg](/Users/Erikhansen/Library/CloudStorage/OneDrive-HaldanConsulting/4.3%20Haldan%20Development/svg/svelte-bars/src/lib/assets/figma-codex-workflow.svg).
+## Assets
+
+Repo SVG assets live in `src/lib/assets`.
+
+Use them for review, packaging, or documentation, but not as the runtime source for live component behavior.
