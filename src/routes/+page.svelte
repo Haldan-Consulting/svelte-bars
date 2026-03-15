@@ -1,32 +1,29 @@
 <script lang="ts">
-	import Machine from '$lib/components/Machine.svelte';
-	import { factoryData } from '$lib/stores/factory';
-	
-	
-	function simulateMachine() {
-		factoryData.set({
-			availability: Math.floor(Math.random() * 20) + 80,
-			performance: Math.floor(Math.random() * 20) + 75,
-			quality: Math.floor(Math.random() * 10) + 90
-		});
-	}
+	import WeeklyTrend from '$lib/components/WeeklyTrend.svelte';
 
-	// subscribe to store
-	$: ({ availability, performance, quality } = $factoryData);
-
-	// calculate OEE
-	$: oee = Math.round((availability / 100) * (performance / 100) * (quality / 100) * 100);
-
-	$: goodCount = Math.round((availability + performance + quality + oee) * 1.2);
-	$: scrapCount = Math.max(0, Math.round((100 - quality) * 0.8));
-
-	// build bar chart data
-	$: machineData = [
-		{ label: 'Availability', value: availability, c1: '#ffe600', c2: '#f9f200' },
-		{ label: 'Performance', value: performance, c1: '#0d4fa3', c2: '#3d7ad6' },
-		{ label: 'Quality', value: quality, c1: '#c40000', c2: '#ff2b2b' },
-		{ label: 'OEE', value: oee, c1: '#00a800', c2: '#3cff3c' }
+	let weekNumber = 24;
+	let weeklyTrendData = [
+		{ label: 'Monday', value: 10, color: '#00cc33' },
+		{ label: 'Tuesday', value: 8.5, color: '#00cc33' },
+		{ label: 'Wednesday', value: 9.5, color: '#00cc33' },
+		{ label: 'Thursday', value: 8, color: '#00cc33' },
+		{ label: 'Friday', value: 7.2, color: '#00cc33' },
+		{ label: 'Saturday', value: 10, color: '#00cc33' },
+		{ label: 'Sunday', value: 10, color: '#00cc33' }
 	];
+
+	function simulateTrend() {
+		weekNumber = weekNumber >= 52 ? 1 : weekNumber + 1;
+		weeklyTrendData = [
+			{ label: 'Monday', value: Math.round((Math.random() * 3 + 7) * 10) / 10, color: '#00cc33' },
+			{ label: 'Tuesday', value: Math.round((Math.random() * 3 + 7) * 10) / 10, color: '#00cc33' },
+			{ label: 'Wednesday', value: Math.round((Math.random() * 3 + 7) * 10) / 10, color: '#00cc33' },
+			{ label: 'Thursday', value: Math.round((Math.random() * 3 + 7) * 10) / 10, color: '#00cc33' },
+			{ label: 'Friday', value: Math.round((Math.random() * 3 + 7) * 10) / 10, color: '#00cc33' },
+			{ label: 'Saturday', value: Math.round((Math.random() * 3 + 7) * 10) / 10, color: '#00cc33' },
+			{ label: 'Sunday', value: Math.round((Math.random() * 3 + 7) * 10) / 10, color: '#00cc33' }
+		];
+	}
 </script>
 
 <style>
@@ -55,14 +52,14 @@
 	}
 
 	.chartStage {
-		width: 600px;
+		width: 710px;
 		max-width: 100%;
 	}
 </style>
 
 <div class="page">
-	<button on:click={simulateMachine}>Update Values</button>
+	<button on:click={simulateTrend}>Update Values</button>
 	<div class="chartStage">
-		<Machine title="Turning Cell 1" partNo="V30-A03" goodCount={goodCount} scrapCount={scrapCount} data={machineData} />
+		<WeeklyTrend machine="Machine 7" metric="OEE" weekNumber={weekNumber} data={weeklyTrendData} />
 	</div>
 </div>
